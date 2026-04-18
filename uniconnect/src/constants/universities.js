@@ -1,0 +1,30 @@
+export const UNIVERSITIES = [
+  "ADNSU",
+  "BDU",
+  "BEU",
+  "UNEC",
+  "ASOIU",
+  "ATU",
+  "ADA",
+  "Khazar Universiteti",
+  "AzTU",
+  "BMU",
+  "ADU",
+  "Naxçıvan Dövlət Universiteti",
+  "Digər",
+];
+
+export const HOBBY_SUGGESTIONS = [
+  "Proqramlaşdırma",
+  "İdman",
+  "Musiqi",
+  "Kitab",
+  "Səyahət",
+  "Fotoqrafiya",
+  "Rəsm",
+  "Kinoteatr",
+  "Startap",
+  "Dil öyrənmə",
+  "Oyun",
+  "Volonteerlik",
+];

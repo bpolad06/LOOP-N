@@ -1,0 +1,11 @@
+{
+  "name": "loopin-workspace",
+  "private": true,
+  "description": "Desktop qovluğundan birbaşa npm əmrləri — UniConnect uniconnect/ altındadır.",
+  "scripts": {
+    "dev": "npm --prefix uniconnect run dev",
+    "build": "npm --prefix uniconnect run build",
+    "preview": "npm --prefix uniconnect run preview",
+    "check-env": "npm --prefix uniconnect run check-env"
+  }
+}
