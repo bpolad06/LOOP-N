@@ -13,8 +13,10 @@ import {
   signOut,
   updateProfile,
 } from "firebase/auth";
-import { doc, getDoc, serverTimestamp, setDoc } from "firebase/firestore";
+import { doc, serverTimestamp, setDoc } from "firebase/firestore";
 import { firebase, firebaseReady } from "../firebase.js";
+import { COL } from "../models/firestorePaths.js";
+import { getDocWithRetry } from "../utils/firestoreRetry.js";
 import { humanizeFirebaseError } from "../utils/firebaseErrors.js";
 import { isAdminEmail } from "../config/admin.js";
 import { isVerifiedStudentEmail } from "../utils/student.js";
@@ -40,11 +42,16 @@ export function AuthProvider({ children }) {
         setLoading(false);
         return;
       }
-      const ref = doc(firebase.db, "users", u.uid);
-      const snap = await getDoc(ref);
-      if (snap.exists()) {
-        setProfile({ id: snap.id, ...snap.data() });
-      } else {
+      const ref = doc(firebase.db, COL.USERS, u.uid);
+      try {
+        const snap = await getDocWithRetry(firebase.db, ref);
+        if (snap.exists()) {
+          setProfile({ id: snap.id, ...snap.data() });
+        } else {
+          setProfile(null);
+        }
+      } catch (e) {
+        console.error("[UniConnect] Firestore profil oxunmadı:", e?.code, e?.message);
         setProfile(null);
       }
       setLoading(false);
@@ -57,8 +64,8 @@ export function AuthProvider({ children }) {
     }
     const email = u.email || "";
     const verifiedStudent = isVerifiedStudentEmail(email);
-    const ref = doc(firebase.db, "users", u.uid);
-    const existing = await getDoc(ref);
+    const ref = doc(firebase.db, COL.USERS, u.uid);
+    const existing = await getDocWithRetry(firebase.db, ref);
     const base = {
       email,
       verifiedStudent,
@@ -89,7 +96,7 @@ export function AuthProvider({ children }) {
         { merge: true },
       );
     }
-    const snap = await getDoc(ref);
+    const snap = await getDocWithRetry(firebase.db, ref);
     setProfile({ id: snap.id, ...snap.data() });
   }
 
@@ -171,8 +178,8 @@ export function AuthProvider({ children }) {
     if (!firebaseReady || !firebase) return;
     const u = firebase.auth.currentUser;
     if (!u) return;
-    const ref = doc(firebase.db, "users", u.uid);
-    const snap = await getDoc(ref);
+    const ref = doc(firebase.db, COL.USERS, u.uid);
+    const snap = await getDocWithRetry(firebase.db, ref);
     if (snap.exists()) setProfile({ id: snap.id, ...snap.data() });
   }
 

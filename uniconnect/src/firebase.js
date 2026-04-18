@@ -1,7 +1,7 @@
 /* global __UC_FB_API_KEY__, __UC_FB_PROJECT_ID__, __UC_FB_MESSAGING_SENDER_ID__, __UC_FB_APP_ID__, __UC_FB_AUTH_DOMAIN__, __UC_FB_STORAGE_BUCKET__ */
 import { initializeApp, getApps } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { enableNetwork, getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
 /**
@@ -63,10 +63,16 @@ if (isConfigComplete()) {
   try {
     const app =
       getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+    /**
+     * Standart getFirestore — SDK avtomatik long-polling aşkarlaması işləyir.
+     * Əvvəlki initializeFirestore+memory bəzi mühitlərdə əlavə "offline" xətası verirdi.
+     */
+    const db = getFirestore(app);
+    enableNetwork(db).catch(() => {});
     firebase = {
       app,
       auth: getAuth(app),
-      db: getFirestore(app),
+      db,
       storage: getStorage(app),
       googleProvider: new GoogleAuthProvider(),
     };
