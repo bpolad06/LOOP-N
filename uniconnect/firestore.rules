@@ -1,0 +1,86 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    match /users/{userId} {
+      allow read: if signedIn();
+      allow create, update: if signedIn() && request.auth.uid == userId;
+    }
+
+    match /friendEdges/{edgeId} {
+      allow read: if signedIn()
+        && request.auth.uid in resource.data.participants;
+      allow create: if signedIn()
+        && request.auth.uid in request.resource.data.participants
+        && request.resource.data.participants.size() == 2;
+      allow update: if signedIn()
+        && request.auth.uid in resource.data.participants;
+    }
+
+    match /chats/{chatId}/messages/{messageId} {
+      allow read: if signedIn()
+        && request.auth.uid in resource.data.participants;
+      allow create: if signedIn()
+        && request.auth.uid in request.resource.data.participants
+        && request.resource.data.senderId == request.auth.uid
+        && request.resource.data.participants.size() == 2;
+    }
+
+    // Kampus Frekansı — campus_messages (anonim mesajlar, uid saxlanmır)
+    match /campus_messages/{uni}/messages/{msgId} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.text is string
+        && request.resource.data.text.size() > 0
+        && request.resource.data.text.size() < 600
+        && request.resource.data.nickname is string;
+    }
+
+    // Günlük əhval / tənhalıq izi — yalnız öz girişlərinə yazı
+    match /moods/{userId}/entries/{dateKey} {
+      allow read: if signedIn();
+      allow create, update: if signedIn()
+        && request.auth.uid == userId
+        && request.resource.data.userId == userId
+        && request.resource.data.dateKey == dateKey
+        && request.resource.data.mood is string;
+    }
+
+    // Tələbə məktubu
+    match /letters/{letterId} {
+      allow read: if signedIn()
+        && (request.auth.uid == resource.data.authorUid
+            || request.auth.uid in resource.data.recipientUids);
+      allow create: if signedIn()
+        && request.resource.data.authorUid == request.auth.uid
+        && request.resource.data.recipientUids is list
+        && request.resource.data.recipientUids.size() == 3
+        && request.resource.data.body is string
+        && request.resource.data.body.size() > 0
+        && request.resource.data.body.size() < 5000;
+      allow update: if false;
+    }
+
+    match /letters/{letterId}/replies/{replyId} {
+      allow read: if signedIn()
+        && (request.auth.uid in get(/databases/$(database)/documents/letters/$(letterId)).data.recipientUids
+            || request.auth.uid == get(/databases/$(database)/documents/letters/$(letterId)).data.authorUid);
+      allow create: if signedIn()
+        && request.resource.data.authorUid == request.auth.uid
+        && request.resource.data.text is string
+        && request.resource.data.text.size() > 0
+        && request.resource.data.text.size() < 2500
+        && request.auth.uid in get(/databases/$(database)/documents/letters/$(letterId)).data.recipientUids;
+    }
+
+    // Günün tapmacası
+    match /dailyPuzzles/{dateKey} {
+      allow read: if signedIn();
+      allow create: if signedIn();
+      allow update: if signedIn();
+    }
+  }
+}

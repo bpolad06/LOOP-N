@@ -1,0 +1,7 @@
+# Netlify — repo kökündə yalnız uniconnect varsa bu faylı olduğu kimi istifadə edin.
+# Əgər repo kökündə başqa layihələr varsa: Site settings → Build & deploy →
+# Base directory = uniconnect
+[build]
+  command = "npm run build"
+  publish = "dist"
+# SPA routing: public/_redirects → dist/_redirects (Vite köçürür)
