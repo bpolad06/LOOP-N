@@ -42,6 +42,9 @@ export function AuthProvider({ children }) {
         setLoading(false);
         return;
       }
+      // Firestore getDoc bəzi şəbəkələrdə asılı qala bilər — UI-ni bloklamamaq üçün
+      // əvvəlcə yükləmə bitir, profil isə arxa planda oxunur.
+      setLoading(false);
       const ref = doc(firebase.db, COL.USERS, u.uid);
       try {
         const snap = await getDocWithRetry(firebase.db, ref);
@@ -54,7 +57,6 @@ export function AuthProvider({ children }) {
         console.error("[UniConnect] Firestore profil oxunmadı:", e?.code, e?.message);
         setProfile(null);
       }
-      setLoading(false);
     });
   }, []);
 
