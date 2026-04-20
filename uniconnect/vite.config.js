@@ -76,4 +76,9 @@ export default defineConfig({
   envDir: __dirname,
   define: envDefine,
   plugins: [react(), tailwindcss()],
+  server: {
+    // Bəzi Windows qurğularında yalnız "localhost" işləməyəndə 127.0.0.1 / LAN ünvanı işləsin
+    host: true,
+    port: 5173,
+  },
 });
